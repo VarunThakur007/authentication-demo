@@ -1,8 +1,10 @@
+require('dotenv').config();
 const mongoose = require("mongoose")
 const express = require("express")
 const connectDb = require("./connection/connectDb")
 const userRouter = require("./router/user")
 const cookieParser = require("cookie-parser")
+
 
 
 const app = express()
