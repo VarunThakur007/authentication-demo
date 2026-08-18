@@ -52,7 +52,7 @@ async function handleSignIn(req, res) {
     //create jwt token claims
     const tokenData = {
         userId : user._id,
-        time : Date()
+        role: user.role
     }
 
     //sign token usinf jwt secret
@@ -66,14 +66,16 @@ async function handleSignIn(req, res) {
     res.status(200).end("token created and send successfully")
 }
 
-async function restrictToValidInUser(req, res, next) {
+async function authenticateToValidInUser(req, res, next) {
     const token = req.cookies.token
     if (!token) {
         return res.status(401).end("token not found in cookie")
     }
     try {
         const secretKey = process.env.jwtTokenSecret
-        jwt.verify(token, secretKey)
+        const tokenData = jwt.verify(token, secretKey)
+        const role = tokenData.role
+        req.role = role
         next()
     }
     catch (error) {
@@ -81,4 +83,17 @@ async function restrictToValidInUser(req, res, next) {
     }
 }
 
-module.exports = { restrictToValidInUser , handleSignIn }
+function restrictTo(validRoles) {
+
+    return function(req, res, next) {
+        const role = req.role
+        for (let i = 0; i < validRoles.length; ++i) {
+            if (role === validRoles[i]) {
+               return next()
+            }
+        }
+        return res.status(403).end("You are unauthorised")
+    }
+}
+
+module.exports = { authenticateToValidInUser , handleSignIn, restrictTo}

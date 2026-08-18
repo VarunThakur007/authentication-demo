@@ -3,11 +3,11 @@ const User = require("../model/user")
 const router = express.Router()
 
 const {handleCreateUser} = require("../controller/user")
-const {handleSignIn, restrictToValidInUser} = require("../middleware/user")
+const {handleSignIn, authenticateToValidInUser, restrictTo} = require("../middleware/user")
 
 router.post("/users",handleCreateUser)
 router.post("/users/signIn",handleSignIn)
-router.get("/users",restrictToValidInUser, async (req, res) => {
+router.get("/users",authenticateToValidInUser,restrictTo(["Admin"]), async (req, res) => {
     const users = await User.find({})
     res.render("displayUsers" ,{
         users:users
